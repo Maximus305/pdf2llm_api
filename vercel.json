@@ -1,7 +1,7 @@
 {
   "builds": [
     {
-      "src": "api/app.py",
+      "src": "api/wsgi.py",
       "use": "@vercel/python",
       "config": {
         "runtime": "python3.10"
@@ -11,12 +11,11 @@
   "routes": [
     {
       "src": "/api/upload",
-      "dest": "/api/app.py",
-      "methods": ["POST"]
+      "dest": "api/wsgi.py"
     },
     {
       "src": "/(.*)",
-      "dest": "/api/app.py"
+      "dest": "api/wsgi.py"
     }
   ]
 }
