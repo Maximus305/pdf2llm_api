@@ -1,9 +1,10 @@
 import fitz  # PyMuPDF
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import os
-import base64
-from io import BytesIO
+import tempfile
+from PIL import Image
+import io
 import logging
 
 app = Flask(__name__)
@@ -31,7 +32,29 @@ def upload_file():
         app.logger.error("No selected file")
         return jsonify({'error': 'No selected file'}), 400
 
-    # ... rest of your upload_file function ...
+    # Read the file into memory
+    pdf_bytes = file.read()
+
+    # Convert PDF to images using PyMuPDF
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+    image_files = []
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        for page_num in range(len(doc)):
+            page = doc.load_page(page_num)
+            pix = page.get_pixmap()
+            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+            img_path = os.path.join(temp_dir, f"page_{page_num + 1}.png")
+            img.save(img_path, format="PNG")
+            image_files.append(img_path)
+
+        doc.close()
+
+        # Send the first image file
+        if image_files:
+            return send_file(image_files[0], mimetype='image/png')
+        else:
+            return jsonify({'error': 'No images generated'}), 500
 
 application = app
 
