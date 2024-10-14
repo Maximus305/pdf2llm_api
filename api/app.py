@@ -24,7 +24,7 @@ def upload_file():
     app.logger.debug(f"Request form: {request.form}")
 
     if 'file' not in request.files:
-        app.logger.error("No file part in the request")
+        app.logger.error("No file part in request")
         return jsonify({'error': 'No file part'}), 400
 
     file = request.files['file']
